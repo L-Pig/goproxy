@@ -1,0 +1,11 @@
+[Unit]
+Description=SocksProxy
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/socksproxy
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

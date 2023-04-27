@@ -1,17 +1,24 @@
 package main
 
 import (
-	"github.com/elazarl/goproxy"
+	"fmt"
 	"log"
-	"flag"
 	"net/http"
+	"os"
+
+	"github.com/elazarl/goproxy"
 )
 
 func main() {
-	verbose := flag.Bool("v", false, "should every proxy request be logged to stdout")
-	addr := flag.String("addr", ":8080", "proxy listen address")
-	flag.Parse()
+	localIP := os.Getenv("LOCAL_IP")
+	if localIP == "" {
+		fmt.Println("export LOCAL_IP=your ip")
+		return
+	}
 	proxy := goproxy.NewProxyHttpServer()
-	proxy.Verbose = *verbose
-	log.Fatal(http.ListenAndServe(*addr, proxy))
+	proxy.Verbose = false
+	if os.Getenv("SHOW_LOG") == "true" {
+		proxy.Verbose = true
+	}
+	log.Fatal(http.ListenAndServe(localIP, proxy))
 }

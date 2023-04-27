@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -15,6 +16,8 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+
+	socksProxy "golang.org/x/net/proxy"
 )
 
 type ConnectActionLiteral int
@@ -73,6 +76,15 @@ func stripPort(s string) string {
 func (proxy *ProxyHttpServer) dial(network, addr string) (c net.Conn, err error) {
 	if proxy.Tr.Dial != nil {
 		return proxy.Tr.Dial(network, addr)
+	}
+	socks5IP := os.Getenv("SOCKS5_IP")
+	if socks5IP != "" {
+		dialer, err := socksProxy.SOCKS5(network, socks5IP, nil, socksProxy.Direct)
+		if err == nil {
+			return dialer.Dial(network, addr)
+		} else {
+			fmt.Fprintln(os.Stderr, "can't connect to the proxy:", err)
+		}
 	}
 	return net.Dial(network, addr)
 }
